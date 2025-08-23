@@ -35,7 +35,11 @@ else:
         "/Users/g.o.a.t/Downloads/PB-main/midyear-karma-456808-i7-7c468449720a.json"
     )
 
-client = OpenAI()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise RuntimeError("Missing OPENAI_API_KEY (set it in .env or GitHub Secrets)")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # -------------------- Folders --------------------
 UPLOAD_FOLDER = "uploads"

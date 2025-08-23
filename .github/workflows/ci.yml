@@ -25,13 +25,24 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
+      - name: Setup Google credentials
+        run: |
+          echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}' > backend/credentials.json
+        shell: bash
+
       - name: Run tests with coverage
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/backend/credentials.json
         run: |
           cd backend
           pytest --maxfail=1 --disable-warnings --cov=main --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/.coverage
 
   frontend:
     runs-on: ubuntu-latest
@@ -58,3 +69,14 @@ jobs:
         run: |
           cd frontend
           flutter test
+
+      - name: Build APK (debug)
+        run: |
+          cd frontend
+          flutter build apk --debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: frontend/build/app/outputs/flutter-apk/app-debug.apk
