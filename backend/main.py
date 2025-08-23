@@ -35,7 +35,7 @@ else:
         "/Users/g.o.a.t/Downloads/PB-main/midyear-karma-456808-i7-7c468449720a.json"
     )
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI()
 
 # -------------------- Folders --------------------
 UPLOAD_FOLDER = "uploads"
