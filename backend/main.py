@@ -36,10 +36,10 @@ else:
     )
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("Missing OPENAI_API_KEY (set it in .env or GitHub Secrets)")
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = None
+if not os.getenv("PYTEST_RUNNING"):   # <-- seulement si pas en test
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
 # -------------------- Folders --------------------
 UPLOAD_FOLDER = "uploads"
