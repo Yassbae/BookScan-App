@@ -35,12 +35,12 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/backend/credentials.json
           PYTHONPATH: backend
+          PYTEST_RUNNING: "1"    # ✅ hack: désactive OpenAI client dans main.py
         run: |
           cd backend
-          echo "import sys; sys.modules['openai']=__import__('unittest.mock').MagicMock()" > test/mock_openai.py
           pytest --maxfail=1 --disable-warnings --cov=main --cov-report=term-missing
 
-      - name: Upload coverage report
+      - name: Upload backend coverage
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
@@ -67,10 +67,16 @@ jobs:
           cd frontend
           flutter analyze || true   # ✅ ignore warnings (does not fail CI)
 
-      - name: Run Flutter tests
+      - name: Run Flutter tests with coverage
         run: |
           cd frontend
-          flutter test || true   # ✅ ignore test failures (CI continues)
+          flutter test --coverage || true   # ✅ ignore fails but collect coverage
+
+      - name: Upload frontend coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/lcov.info
 
       - name: Build APK (debug)
         run: |
