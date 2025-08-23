@@ -7,10 +7,14 @@ on:
     branches: [ "main" ]
 
 jobs:
+  # ===================
+  # Backend (Flask API)
+  # ===================
   backend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -21,28 +25,33 @@ jobs:
         run: |
           cd backend
           python -m pip install --upgrade pip
-          pip install -r ../requirements.txt
+          pip install -r requirements.txt
 
       - name: Run tests with coverage
         run: |
           cd backend
-          pytest --cov=main --cov-report=term-missing --cov-report=html
+          pytest --cov=main --cov-report=term-missing
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
+          name: backend-coverage
           path: backend/htmlcov
 
+  # ===================
+  # Frontend (Flutter)
+  # ===================
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.22.0"
+          flutter-version: '3.25.0'   # ✅ Dart 3.8.1 inclus
+          channel: 'stable'
 
       - name: Install dependencies
         run: |
@@ -59,8 +68,8 @@ jobs:
           cd frontend
           flutter build apk --debug
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-apk
+          name: bookscan-app-apk
           path: frontend/build/app/outputs/flutter-apk/app-debug.apk
