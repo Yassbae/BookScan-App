@@ -10,60 +10,51 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           cd backend
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-cov
 
       - name: Run tests with coverage
         env:
-          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
           cd backend
-          pytest --cov=main --cov-report=term-missing
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-coverage
-          path: backend/htmlcov
+          pytest --maxfail=1 --disable-warnings --cov=main --cov-report=term-missing
 
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.13.0"
-          channel: stable
+          flutter-version: '3.35.1'   # ✅ Compatible avec Dart 3.8.1
 
       - name: Install dependencies
         run: |
           cd frontend
           flutter pub get
 
+      - name: Run Flutter analyzer
+        run: |
+          cd frontend
+          flutter analyze
+
       - name: Run Flutter tests
         run: |
           cd frontend
           flutter test
-
-      - name: Build APK (debug)
-        run: |
-          cd frontend
-          flutter build apk --debug
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: frontend/build/app/outputs/flutter-apk/app-debug.apk
