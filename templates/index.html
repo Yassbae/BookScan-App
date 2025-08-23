@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scan de Tranches de Livres</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f9f9f9;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #27ae60;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .hidden {
+      display: none;
+    }
+    #result {
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+    .download-link {
+      display: block;
+      margin-top: 20px;
+      text-decoration: none;
+      background: #2980b9;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 Bienvenue {{ username }}</h1>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="images" accept="image/*" multiple capture="environment" required />
+      <button type="submit">Scanner</button>
+    </form>
+
+    <div id="result"></div>
+
+    <a id="downloadLink" class="hidden download-link" download>Télécharger le fichier Excel</a>
+    <br>
+    <a href="/logout">🔓 Déconnexion</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const resultDiv = document.getElementById('result');
+    const downloadLink = document.getElementById('downloadLink');
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      resultDiv.innerHTML = '⏳ Traitement en cours...';
+      downloadLink.classList.add('hidden');
+
+      const formData = new FormData(form);
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          resultDiv.innerHTML = '<p style="color:red;">Erreur lors du traitement.</p>';
+          return;
+        }
+
+        const data = await response.json();
+        let html = '';
+        data.data.forEach(item => {
+          html += `<pre>${JSON.stringify(item, null, 2)}</pre><hr>`;
+        });
+        resultDiv.innerHTML = html;
+
+        downloadLink.href = `/download/${data.file}`;
+        downloadLink.classList.remove('hidden');
+      } catch (error) {
+        resultDiv.innerHTML = '<p style="color:red;">Erreur réseau ou serveur.</p>';
+      }
+    };
+  </script>
+</body>
+</html>
