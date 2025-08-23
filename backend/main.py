@@ -19,7 +19,22 @@ from google.cloud import vision
 load_dotenv()
 
 # -------------------- External API Config --------------------
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+# Check if credentials are passed via GitHub Actions secret
+google_credentials_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+
+if google_credentials_json:
+    # Running in CI/CD: write credentials to a temporary file
+    creds_path = os.path.join(os.getcwd(), "gcp_credentials.json")
+    with open(creds_path, "w") as f:
+        f.write(google_credentials_json)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_path
+else:
+    # Running locally: use your local file path
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv(
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "/Users/g.o.a.t/Downloads/PB-main/midyear-karma-456808-i7-7c468449720a.json"
+    )
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # -------------------- Folders --------------------
